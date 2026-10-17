@@ -1,0 +1,43 @@
+0:{"a":"$@1","f":"","b":"LMZPdyRlweFVrLgaX7moo"}
+2:Tc07,<h1><strong><img alt="" src="https://dulae92u7241v.cloudfront.net/1772100600/admin_v2/metaGallery//4762569_155_WhatsApp%20Image%202026-09-12%20at%2013.32.28%20%281%29.jpeg" style="width: 400px; height: 210px;" /></strong></h1>
+
+<h1><strong><img alt="" src="https://dulae92u7241v.cloudfront.net/1772100600/admin_v2/metaGallery//2495695_157_WhatsApp%20Image%202026-10-05%20at%2017.25.02.jpeg" style="width: 400px; height: 238px;" /><br />
+DRONA JEE class 11th &nbsp;Batch Details&nbsp;</strong></h1>
+
+<p>1.⁠ ⁠We&#39;ll cover class 11th &nbsp;<strong>Physics, Chemistry, and Mathematics</strong> for JEE aspirants preparing for <strong>JEE Main &amp; JEE Advanced 2028</strong>.</p>
+
+<p>2.⁠ ⁠All lectures will be conducted <strong>Live Online</strong>, and in case you miss a session, <strong>recordings will be available to students on the Mission JEET App/Website</strong>.</p>
+
+<p>3.⁠ ⁠Classes will be scheduled in a <strong>structured timetable suitable for consistent preparation</strong>.</p>
+
+<p>4.⁠ ⁠There will be <strong>two classes per day</strong>, and classes will be conducted <strong>6 days a week</strong>.</p>
+
+<p>5.⁠ ⁠Each class will be accompanied by <strong>PDF Notes</strong>, which will be uploaded after the lecture on the <strong>Mission JEET Application</strong>.</p>
+
+<p>6.⁠ ⁠<strong>Daily Practice Problems (DPPs)</strong> along with <strong>Video Solutions by the Faculty</strong> will be provided to strengthen concept clarity and problem-solving skills.</p>
+
+<p>7.⁠ ⁠<strong>Chapterwise Practice Sheets / Modules (JEE Main + Advanced Level)</strong> pdfswill be provided for comprehensive practice.</p>
+
+<p>8.⁠ ⁠A <strong>summary lecture of each chapter</strong> will be provided after chapter completion for <strong>quick revision and concept reinforcement</strong>.</p>
+
+<p>9.⁠ ⁠<strong>Biweekly scheduled tests</strong> will be conducted according to the <strong>test planner</strong> to track your preparation progress.</p>
+
+<p>10.⁠ ⁠Specialized <strong>JEE Advanced Level Tests</strong> will also be conducted to evaluate your preparation at the <strong>Advanced level</strong>.</p>
+
+<p>11.⁠ ⁠To support your <strong>Board preparation along with JEE</strong>, <strong>free access to the Prarambh Science Batch</strong> will be provided.</p>
+
+<p>12.⁠ ⁠After completion of the syllabus, <strong>dedicated revision classes</strong> will be conducted to strengthen concepts and improve exam readiness.</p>
+
+<p>13.⁠ ⁠Classes will <strong>commence on 6th April 2026</strong>, and the <strong>complete syllabus will be covered by 31st January 2027</strong>.</p>
+
+<p>14.⁠ ⁠The <strong>revision phase will continue until 28th February 2027</strong>, followed by <strong>tests until 15th March 2027</strong>.</p>
+
+<p>15.⁠ ⁠The <strong>entire course will remain accessible to you until the JEE 2028 examinations</strong>.</p>
+
+<p>16.⁠ ⁠This batch is <strong>non-refundable and non-transferable</strong>.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<h1>&nbsp;</h1>1:{"success":true,"responseCode":3001,"message":"Courses Details -  (from cache)course_details:parent_id:1792250556:151:151:true","data":[{"title":"Overview","type":"overview","description":"","data":[{"layout_type":"details","layout_title":"Details","layout_data":[{"id":151,"title":"Drona JEE class 11th","description":"$2","thumbnail":"https://dulae92u7241v.cloudfront.net/1772100600/admin_v2/metaGallery//565395_1_7261523_131_drona%20jee%20banner%20app.jpg","mrp":"6000.00","offer_price":"4999.00","cat_type":0,"shipping_charge":"0.00","course_type":1,"tax_rate":18,"info":null,"duration_type":3,"days":0,"start_date":"1772821801","end_date":"1843410599","is_featured":"","is_new":"New","is_trending":"Trending","average_rating":"0.0","review_count":0,"pdf":null,"is_popup":0,"is_purchased":"1","discount_percentage":16.68,"dynamic_link":"https://course.nexttoppers.com/dl/r/lXbZ1d6L","class_submitted":0,"is_doubt_show":"1"}]},{"layout_type":"packages","layout_title":"Packages","layout_data":[{"parent_id":"151","id":"186","title":"NCERT Library","thumbnail":"https://dylnd2lqy6eys.cloudfront.net/1770981347/admin_v2/uploads/courses/thumbnail/2310491_125_MJ%20Ncert%20Library09.png","package_type":"combo","validity":"0","is_book":"0","cat_type":"0"},{"parent_id":"151","id":"185","title":"Drona 2.0 JEE Reloaded Class 11th","thumbnail":"https://dulae92u7241v.cloudfront.net/1772100600/admin_v2/uploads/courses/thumbnail/6712061_131_drona%202.0%20RELOADED%20JEE%20banner%20app.png","package_type":"combo","validity":"0","is_book":"0","cat_type":"0"},{"parent_id":"151","id":"107","title":"Science (PCMB) 11th - PRARAMBH 2.0  ( 2026-27 )","thumbnail":"https://dylnd2lqy6eys.cloudfront.net/1770981347/admin_v2/uploads/courses/thumbnail/7450443_125_Science%20Prarambh%202.0%20Batch%20Class%2011th%20App%20Banners.jpg","package_type":"combo","validity":"0","is_book":"0","cat_type":"0"}]},{"layout_type":"related_courses","layout_title":"Related Course"},{"layout_type":"faqs","layout_title":"FAQ","layout_data":[]},{"layout_type":"educators","layout_title":"Educator","layout_data":[]}]},{"tab_id":232,"title":"Lectures","type":"content","description":"","data":[]},{"tab_id":204,"title":"DPP","type":"content","description":"","data":[]},{"tab_id":205,"title":"Test","type":"content","description":"","data":[]},{"tab_id":148,"title":"Study Resources","type":"content","description":"","data":[]}],"short_code":null}
