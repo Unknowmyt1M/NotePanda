@@ -127,7 +127,9 @@ class NotePandaDB:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             for r in resources:
-                is_pdf = 1 if (r.file_url and ".pdf" in r.file_url.lower()) else 0
+                # Strictly index only PDF documents (notes, DPPs, formula sheets)
+                if not (r.file_url and ".pdf" in r.file_url.lower()):
+                    continue
                 cursor.execute("""
                 INSERT INTO resources (id, batch_id, folder_id, title, file_type, file_url, drm_token, is_pdf, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -136,7 +138,7 @@ class NotePandaDB:
                     file_url=excluded.file_url,
                     is_pdf=excluded.is_pdf,
                     updated_at=excluded.updated_at
-                """, (r.id, batch_id, r.parent_id, r.title, r.file_type, r.file_url, r.drm_token, is_pdf, r.created_at, now))
+                """, (r.id, batch_id, r.parent_id, r.title, r.file_type, r.file_url, r.drm_token, 1, r.created_at, now))
             conn.commit()
 
     # --- Query Methods ---

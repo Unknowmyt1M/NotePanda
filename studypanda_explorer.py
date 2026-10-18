@@ -101,8 +101,9 @@ class StudyPandaExplorer:
                     continue
                 seen_ids.add(batch_id)
                 text = a.get_text(separator=" ", strip=True)
-                # Cleanup common trailing texts
                 clean_title = re.sub(r'PriceFreeStudy.*$', '', text).strip()
+                clean_title = re.sub(r'Price\s*Free\s*Study.*$', '', clean_title).strip()
+                clean_title = re.sub(r'Price.*$', '', clean_title).strip()
                 if not clean_title:
                     clean_title = f"Batch {batch_id}"
                 
@@ -122,14 +123,14 @@ class StudyPandaExplorer:
         Dynamically discovers Next.js Server Action IDs for the given route
         by inspecting the route's HTML and loading its page chunk.
         """
-        cache_key = f"actions_{section}_{course_id}"
+        cache_key = f"actions_{section}"
         if cache_key in self._action_cache:
             return self._action_cache[cache_key]
 
         page_url = f"{BASE_URL}/{section}/{course_id}"
         logger.info(f"Resolving Server Actions dynamically from {page_url}...")
         self._sleep()
-        resp = self.client.get(page_url)
+        resp = self.client.get(page_url, timeout=25.0)
         if resp.status_code != 200:
             raise RuntimeError(f"Failed to load course page: HTTP {resp.status_code}")
 
@@ -147,7 +148,7 @@ class StudyPandaExplorer:
         chunk_url = f"{BASE_URL}{page_chunk_src}"
         logger.info(f"Loading page chunk: {chunk_url}...")
         self._sleep()
-        chunk_resp = self.client.get(chunk_url)
+        chunk_resp = self.client.get(chunk_url, timeout=25.0)
         if chunk_resp.status_code != 200:
             raise RuntimeError(f"Failed to fetch chunk JS: HTTP {chunk_resp.status_code}")
 
@@ -160,7 +161,7 @@ class StudyPandaExplorer:
             raise RuntimeError(f"No Server Actions found in chunk {chunk_url}")
 
         self._action_cache[cache_key] = actions
-        logger.info(f"Discovered actions: {list(actions.keys())}")
+        logger.info(f"Discovered actions for {section}: {list(actions.keys())}")
         return actions
 
     def fetch_content_raw(self, section: str, course_id: str, parent_id: str = "0") -> List[Dict[str, Any]]:
@@ -187,9 +188,19 @@ class StudyPandaExplorer:
         }
 
         self._sleep()
-        resp = self.client.post(url, headers=headers, content=payload)
-        if resp.status_code != 200:
-            raise RuntimeError(f"Server action returned HTTP {resp.status_code}: {resp.text[:200]}")
+        resp = None
+        for attempt in range(3):
+            try:
+                resp = self.client.post(url, headers=headers, content=payload, timeout=25.0)
+                if resp.status_code == 200:
+                    break
+            except Exception as e:
+                logger.warning(f"Attempt {attempt+1} failed for {url} parent {parent_id}: {e}")
+                time.sleep(1.0)
+
+        if not resp or resp.status_code != 200:
+            error_text = resp.text[:200] if resp else "Connection error"
+            raise RuntimeError(f"Server action returned HTTP {resp.status_code if resp else 'ERR'}: {error_text}")
 
         # Parse RSC stream line starting with '1:'
         data = []

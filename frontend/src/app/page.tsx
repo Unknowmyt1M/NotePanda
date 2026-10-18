@@ -17,8 +17,7 @@ import {
   ArrowLeft,
   Eye,
   CheckCircle2,
-  Video,
-  Play
+  Clock
 } from 'lucide-react';
 import dataSnapshot from '@/data_snapshot.json';
 
@@ -38,7 +37,6 @@ interface FolderItem {
   title: string;
   depth: number;
   pdf_count: number;
-  video_count: number;
 }
 
 interface Resource {
@@ -59,23 +57,21 @@ export default function HomePage() {
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string; title: string }[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string>("0");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"all" | "pdfs" | "lectures">("all");
   const [previewPdf, setPreviewPdf] = useState<{ url: string; title: string } | null>(null);
 
-  // Initialize batches with statistics
+  // Initialize batches with statistics (Strictly PDF notes only)
   useEffect(() => {
     const rawBatches = dataSnapshot.batches.map((b: any) => {
-      const bResources = dataSnapshot.resources.filter((r: any) => r.batch_id === b.id);
-      const pdfs = bResources.filter((r: any) => r.is_pdf === 1).length;
+      const pdfs = dataSnapshot.resources.filter((r: any) => r.batch_id === b.id && r.is_pdf === 1).length;
       return {
         ...b,
-        indexed_resources: bResources.length,
+        indexed_resources: pdfs,
         indexed_pdfs: pdfs,
       };
     });
     setBatches(rawBatches);
     if (rawBatches.length > 0) {
-      setSelectedBatch(rawBatches[0]); // Default to first batch (e.g. Drona JEE 11th)
+      setSelectedBatch(rawBatches[0]);
     }
   }, []);
 
@@ -87,28 +83,20 @@ export default function HomePage() {
     );
   }, [selectedBatch, currentFolderId]);
 
-  // Compute resources (files) directly under current folder with active tab filter
+  // Compute PDF resources directly under current folder (Strictly PDFs only)
   const currentResources = useMemo(() => {
     if (!selectedBatch || currentFolderId === "0") return [];
-    const allFiles = dataSnapshot.resources.filter(
-      (r: any) => r.batch_id === selectedBatch.id && r.folder_id === currentFolderId
+    return dataSnapshot.resources.filter(
+      (r: any) => r.batch_id === selectedBatch.id && r.folder_id === currentFolderId && r.is_pdf === 1
     );
+  }, [selectedBatch, currentFolderId]);
 
-    if (activeTab === "pdfs") {
-      return allFiles.filter((r: any) => r.is_pdf === 1);
-    }
-    if (activeTab === "lectures") {
-      return allFiles.filter((r: any) => r.is_pdf === 0);
-    }
-    return allFiles;
-  }, [selectedBatch, currentFolderId, activeTab]);
-
-  // Global search results across all batches and folders
+  // Global search results across all batches and folders (Strictly PDFs)
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase().trim();
     return dataSnapshot.resources
-      .filter((r: any) => r.title.toLowerCase().includes(q))
+      .filter((r: any) => r.is_pdf === 1 && r.title.toLowerCase().includes(q))
       .slice(0, 40)
       .map((r: any) => {
         const folder = dataSnapshot.folders.find((f: any) => f.id === r.folder_id);
@@ -126,13 +114,11 @@ export default function HomePage() {
     setSelectedBatch(batch);
     setCurrentFolderId("0");
     setBreadcrumbs([]);
-    setActiveTab("all");
   };
 
   const handleOpenFolder = (folder: FolderItem) => {
     setCurrentFolderId(folder.id);
     setBreadcrumbs(prev => [...prev, { id: folder.id, title: folder.title }]);
-    setActiveTab("all");
   };
 
   const handleNavigateBreadcrumb = (index: number) => {
@@ -144,16 +130,10 @@ export default function HomePage() {
       setCurrentFolderId(target.id);
       setBreadcrumbs(breadcrumbs.slice(0, index + 1));
     }
-    setActiveTab("all");
   };
 
-  const totalStats = useMemo(() => {
-    return {
-      batches: dataSnapshot.batches.length,
-      pdfs: dataSnapshot.resources.filter((r: any) => r.is_pdf === 1).length,
-      videos: dataSnapshot.resources.filter((r: any) => r.is_pdf === 0).length,
-      folders: dataSnapshot.folders.length,
-    };
+  const totalPdfs = useMemo(() => {
+    return dataSnapshot.resources.filter((r: any) => r.is_pdf === 1).length;
   }, []);
 
   return (
@@ -168,7 +148,7 @@ export default function HomePage() {
             <h1 className="text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
               NotePanda
             </h1>
-            <p className="text-[10px] sm:text-xs text-emerald-400 font-medium">Free JEE & NEET Study Hub</p>
+            <p className="text-[10px] sm:text-xs text-emerald-400 font-medium">Free JEE & NEET PDF Notes Hub</p>
           </div>
         </div>
 
@@ -176,15 +156,11 @@ export default function HomePage() {
         <div className="hidden md:flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>{totalStats.pdfs.toLocaleString()}+ Notes & Formulas</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400">
-            <Video className="w-3.5 h-3.5" />
-            <span>{totalStats.videos.toLocaleString()}+ Video Lectures</span>
+            <span>{totalPdfs.toLocaleString()}+ Verified PDF Notes</span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Direct CDN Stream</span>
+            <span>Direct CDN Access</span>
           </div>
         </div>
       </header>
@@ -194,13 +170,13 @@ export default function HomePage() {
         {/* Hero & Search Section */}
         <div className="text-center max-w-3xl mx-auto space-y-4 pt-2 pb-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Sparkles className="w-3.5 h-3.5" /> Handpicked JEE & NEET Chapter Notes, DPPs & Lectures
+            <Sparkles className="w-3.5 h-3.5" /> Handpicked JEE & NEET Chapter Notes, DPPs & Formula Sheets
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
             Stop searching. <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Start studying.</span>
           </h2>
           <p className="text-sm sm:text-base text-gray-400">
-            Instant search across handwritten notes, chapter revision formulas, DPPs, and video lectures. Direct in-browser viewing with zero ads or logins.
+            Instant search across chapter revision notes, formula sheets, DPPs and question modules. Direct in-browser viewing with zero ads or logins.
           </p>
 
           {/* Interactive Search Bar */}
@@ -211,7 +187,7 @@ export default function HomePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes or lectures (e.g. Work Power Energy, Binomial Theorem, Mole Concept)..."
+                placeholder="Search notes (e.g. Work Power Energy, Binomial Theorem, Structure of Atom, Mole Concept)..."
                 className="w-full pl-12 pr-10 py-3.5 bg-gray-900/90 border border-gray-700/80 rounded-2xl text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-xl"
               />
               {searchQuery && (
@@ -234,7 +210,7 @@ export default function HomePage() {
                 <Search className="w-5 h-5 text-emerald-400" />
                 Search Results for &quot;{searchQuery}&quot;
               </h3>
-              <span className="text-xs text-gray-400">{searchResults.length} items found</span>
+              <span className="text-xs text-gray-400">{searchResults.length} notes found</span>
             </div>
 
             {searchResults.length === 0 ? (
@@ -244,63 +220,46 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                {searchResults.map((res: any) => {
-                  const isPdf = res.is_pdf === 1 || (res.file_url && res.file_url.includes(".pdf"));
-                  return (
-                    <div
-                      key={res.id}
-                      className="p-4 rounded-xl bg-gray-800/60 border border-gray-700/60 hover:border-emerald-500/50 transition-all flex items-start justify-between gap-4 group"
-                    >
-                      <div className="space-y-1 truncate">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
-                            isPdf ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                          }`}>
-                            {isPdf ? 'PDF NOTE' : 'VIDEO LECTURE'}
-                          </span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            {res.folder_title}
-                          </span>
-                          <span className="text-xs text-gray-400 truncate max-w-[120px]">{res.batch_title}</span>
-                        </div>
-                        <h4 className="font-semibold text-sm sm:text-base text-gray-200 group-hover:text-emerald-300 transition-colors line-clamp-2">
-                          {res.title}
-                        </h4>
+                {searchResults.map((res: any) => (
+                  <div
+                    key={res.id}
+                    className="p-4 rounded-xl bg-gray-800/60 border border-gray-700/60 hover:border-emerald-500/50 transition-all flex items-start justify-between gap-4 group"
+                  >
+                    <div className="space-y-1 truncate">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                          PDF NOTE
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {res.folder_title}
+                        </span>
+                        <span className="text-xs text-gray-400 truncate max-w-[140px]">{res.batch_title}</span>
                       </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        {isPdf ? (
-                          <button
-                            onClick={() => setPreviewPdf({ url: res.file_url, title: res.title })}
-                            className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-emerald-500/30"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            Preview
-                          </button>
-                        ) : (
-                          <a
-                            href={res.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-purple-500/30"
-                          >
-                            <Play className="w-3.5 h-3.5" />
-                            Play
-                          </a>
-                        )}
-                        <a
-                          href={res.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-300 transition-colors"
-                          title="Open original link"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
+                      <h4 className="font-semibold text-sm sm:text-base text-gray-200 group-hover:text-emerald-300 transition-colors line-clamp-2">
+                        {res.title}
+                      </h4>
                     </div>
-                  );
-                })}
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setPreviewPdf({ url: res.file_url, title: res.title })}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-emerald-500/30"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Preview
+                      </button>
+                      <a
+                        href={res.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-lg bg-gray-700/50 hover:bg-gray-700 text-gray-300 transition-colors"
+                        title="Open / Download original PDF"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -316,18 +275,18 @@ export default function HomePage() {
                 <button
                   key={b.id}
                   onClick={() => handleSelectBatch(b)}
-                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
                     selectedBatch?.id === b.id
                       ? 'bg-emerald-500 text-gray-950 shadow-lg shadow-emerald-500/25 scale-[1.02]'
                       : 'bg-gray-900/80 text-gray-400 hover:text-gray-200 hover:bg-gray-800 border border-gray-800'
                   }`}
                 >
                   <span>{b.title}</span>
-                  {b.indexed_pdfs !== undefined && b.indexed_pdfs > 0 && (
-                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                  {b.indexed_pdfs !== undefined && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] ${
                       selectedBatch?.id === b.id ? 'bg-gray-900/30 text-gray-950 font-bold' : 'bg-gray-800 text-emerald-400'
                     }`}>
-                      {b.indexed_pdfs} PDFs
+                      {b.indexed_pdfs} Notes
                     </span>
                   )}
                 </button>
@@ -392,10 +351,8 @@ export default function HomePage() {
                           <h5 className="font-semibold text-sm sm:text-base text-gray-200 group-hover:text-white truncate">
                             {folder.title}
                           </h5>
-                          <p className="text-xs text-gray-400">
-                            {folder.pdf_count > 0 && `${folder.pdf_count} PDFs`}
-                            {folder.pdf_count > 0 && folder.video_count > 0 && ' • '}
-                            {folder.video_count > 0 && `${folder.video_count} Lectures`}
+                          <p className="text-xs text-emerald-400/80 font-medium mt-0.5">
+                            {folder.pdf_count > 0 ? `${folder.pdf_count} PDF Notes` : 'Open Folder'}
                           </p>
                         </div>
                       </div>
@@ -406,104 +363,52 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Direct Files / Resources Grid with Tab Filters */}
-            {dataSnapshot.resources.filter((r: any) => r.batch_id === selectedBatch?.id && r.folder_id === currentFolderId).length > 0 && (
+            {/* Direct Files / Resources Grid (Notes & Documents only) */}
+            {currentResources.length > 0 && (
               <div className="space-y-3 pt-2">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 pb-2">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-emerald-400" /> Chapter Contents
-                  </h4>
-                  {/* Filter Pills */}
-                  <div className="flex items-center gap-1.5 bg-gray-900/80 p-1 rounded-xl border border-gray-800 text-xs">
-                    <button
-                      onClick={() => setActiveTab("all")}
-                      className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                        activeTab === "all" ? 'bg-emerald-500 text-gray-950 font-bold' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      All
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("pdfs")}
-                      className={`px-3 py-1 rounded-lg font-medium flex items-center gap-1 transition-colors ${
-                        activeTab === "pdfs" ? 'bg-red-500/20 text-red-300 font-bold border border-red-500/40' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      <FileText className="w-3.5 h-3.5" /> PDF Notes
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("lectures")}
-                      className={`px-3 py-1 rounded-lg font-medium flex items-center gap-1 transition-colors ${
-                        activeTab === "lectures" ? 'bg-purple-500/20 text-purple-300 font-bold border border-purple-500/40' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      <Video className="w-3.5 h-3.5" /> Video Lectures
-                    </button>
-                  </div>
-                </div>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-emerald-400" /> PDF Notes & Documents ({currentResources.length})
+                </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {currentResources.map((res: any) => {
-                    const isPdf = res.is_pdf === 1 || (res.file_url && res.file_url.includes(".pdf"));
-                    return (
-                      <div
-                        key={res.id}
-                        className="p-4 rounded-xl bg-gray-900/90 border border-gray-800/90 hover:border-emerald-500/50 transition-all flex items-center justify-between gap-3 group"
-                      >
-                        <div className="flex items-start gap-3 truncate">
-                          <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${
-                            isPdf ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                          }`}>
-                            {isPdf ? <FileText className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-                          </div>
-                          <div className="truncate">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                                isPdf ? 'bg-red-500/10 text-red-400' : 'bg-purple-500/10 text-purple-400'
-                              }`}>
-                                {isPdf ? 'PDF NOTE' : 'VIDEO LECTURE'}
-                              </span>
-                            </div>
-                            <h5 className="font-semibold text-sm text-gray-200 group-hover:text-emerald-300 transition-colors truncate mt-1">
-                              {res.title}
-                            </h5>
-                          </div>
+                  {currentResources.map((res: any) => (
+                    <div
+                      key={res.id}
+                      className="p-4 rounded-xl bg-gray-900/90 border border-gray-800/90 hover:border-emerald-500/50 transition-all flex items-center justify-between gap-3 group"
+                    >
+                      <div className="flex items-start gap-3 truncate">
+                        <div className="p-2 rounded-lg shrink-0 mt-0.5 bg-red-500/10 text-red-400 border border-red-500/20">
+                          <FileText className="w-4 h-4" />
                         </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          {isPdf ? (
-                            <>
-                              <button
-                                onClick={() => setPreviewPdf({ url: res.file_url, title: res.title })}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-emerald-500/30"
-                              >
-                                <Eye className="w-3.5 h-3.5" /> Preview
-                              </button>
-                              <a
-                                href={res.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
-                                title="Download PDF"
-                              >
-                                <Download className="w-4 h-4" />
-                              </a>
-                            </>
-                          ) : (
-                            <a
-                              href={res.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-purple-500/30"
-                              title="Play Video Stream"
-                            >
-                              <Play className="w-3.5 h-3.5" /> Play Video
-                            </a>
-                          )}
+                        <div className="truncate">
+                          <h5 className="font-semibold text-sm text-gray-200 group-hover:text-emerald-300 transition-colors truncate">
+                            {res.title}
+                          </h5>
+                          <span className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3" /> Direct CloudFront CDN
+                          </span>
                         </div>
                       </div>
-                    );
-                  })}
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setPreviewPdf({ url: res.file_url, title: res.title })}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-emerald-500/30"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> Preview
+                        </button>
+                        <a
+                          href={res.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+                          title="Download PDF"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -512,8 +417,8 @@ export default function HomePage() {
             {currentSubfolders.length === 0 && currentResources.length === 0 && (
               <div className="py-16 text-center text-gray-500 bg-gray-900/30 rounded-2xl border border-gray-800/50">
                 <Folder className="w-12 h-12 mx-auto mb-3 opacity-40 text-gray-400" />
-                <h5 className="text-base font-semibold text-gray-300">No items in this category</h5>
-                <p className="text-xs text-gray-400 mt-1">Check other tabs (PDF Notes / Video Lectures) or browse other subjects above.</p>
+                <h5 className="text-base font-semibold text-gray-300">No notes in this folder</h5>
+                <p className="text-xs text-gray-400 mt-1">Browse other subjects or check other batches in the top selector.</p>
               </div>
             )}
           </div>
@@ -577,7 +482,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-gray-800/80 bg-[#060910] py-8 px-4 text-center text-xs text-gray-500 space-y-2 mt-auto">
         <p className="font-medium text-gray-400">
-          NotePanda 🐼 — Educational Discovery Engine for Indian Students
+          NotePanda 🐼 — Educational PDF Notes Discovery Engine for Indian Students
         </p>
         <p className="max-w-2xl mx-auto text-gray-400">
           Disclaimer: NotePanda does not host or mirror any copyrighted files. All documents and links remain hosted on their original CDN providers. Built for fair-use academic discovery and search indexation.
